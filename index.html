@@ -2,6 +2,10 @@
 <html>
 <head>
 <meta charset="UTF-8">
+
+<!-- ✅ Google Site Verification -->
+<meta name="google-site-verification" content="IZg6wywpr1xQH89vA1zJ7nnAHFwwiWux2LePPavXNyQ" />
+
 <title>PicxelRACE</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -33,14 +37,14 @@ canvas{display:none;background:black;}
  font-size:10px;
 }
 
-/* ✅ ONLY THIS BLOCK WAS REPLACED */
+/* dots menu */
 #dots{
  display:none;
  position:absolute;
  top:8px;
  right:8px;
  cursor:pointer;
- font-size:22px;   /* 👈 makes the three dots bigger */
+ font-size:22px;
  line-height:1;
 }
 
@@ -68,13 +72,14 @@ canvas{display:none;background:black;}
 <canvas id="game" width="360" height="640"></canvas>
 
 <div id="hud">
- Score:<span id="score">0</span><br>
- High:<span id="high">0</span><br>
- Speed:<span id="speed">50</span>PPM<br>
- Time:<span id="time">300</span>s
+ Score: <span id="score">0</span><br>
+ High: <span id="high">0</span><br>
+ Speed: <span id="speed">50</span> PPM<br>
+ Time: <span id="time">300</span>s
 </div>
 
 <div id="dots" onclick="toggleMenu()">⋮</div>
+
 <div id="dropdown">
  <input id="cheat" placeholder="Cheat"><br><br>
  <button onclick="applyCheat()">Apply</button><br><br>
@@ -96,21 +101,23 @@ canvas{display:none;background:black;}
 </div>
 
 <script>
-const c=document.getElementById("game"),x=c.getContext("2d");
-let car={x:170,y:500,size:14,color:"cyan"};
-let obstacles=[],powerups=[],exhaust=[];
-let score=0,speed=50,timeLeft=300;
-let running=false,paused=false;
+const c = document.getElementById("game");
+const x = c.getContext("2d");
 
-let shield=false,x2=false,nitro=false,invisible=false;
-let accelInt=null;
+let car = { x:170, y:500, size:14, color:"cyan" };
+let obstacles = [], exhaust = [];
+let score = 0, speed = 50, timeLeft = 300;
+let running = false, paused = false;
 
-document.getElementById("high").textContent=
-localStorage.getItem("pixelHigh")||0;
+let shield = false, x2 = false, nitro = false, invisible = false;
+let accelInt = null;
+
+document.getElementById("high").textContent =
+ localStorage.getItem("pixelHigh") || 0;
 
 /* MAIN LOOP */
 function loop(){
- if(!running||paused)return;
+ if(!running || paused) return;
  x.clearRect(0,0,360,640);
  drawAuras();
  drawExhaust();
@@ -122,24 +129,24 @@ function loop(){
 
 /* CAR */
 function drawCar(){
- if(invisible)return;
- x.fillStyle=car.color;
- x.fillRect(car.x,car.y,car.size,car.size);
+ if(invisible) return;
+ x.fillStyle = car.color;
+ x.fillRect(car.x, car.y, car.size, car.size);
 }
 
 /* AURAS */
 function drawAuras(){
- let t=Date.now()/300;
+ let t = Date.now()/300;
  if(shield){
-  x.strokeStyle="rgba(0,255,255,0.6)";
+  x.strokeStyle = "rgba(0,255,255,0.6)";
   x.beginPath();
-  x.arc(car.x+7,car.y+7,16+Math.sin(t)*2,0,Math.PI*2);
+  x.arc(car.x+7, car.y+7, 16+Math.sin(t)*2, 0, Math.PI*2);
   x.stroke();
  }
  if(x2){
-  x.strokeStyle="rgba(180,0,255,0.6)";
+  x.strokeStyle = "rgba(180,0,255,0.6)";
   x.beginPath();
-  x.arc(car.x+7,car.y+7,20+Math.sin(t*2)*2,0,Math.PI*2);
+  x.arc(car.x+7, car.y+7, 20+Math.sin(t*2)*2, 0, Math.PI*2);
   x.stroke();
  }
 }
@@ -147,77 +154,87 @@ function drawAuras(){
 /* EXHAUST */
 function drawExhaust(){
  exhaust.push({
-  x:car.x+7,y:car.y+car.size+2,
-  color:nitro?"#b300ff":
-   (shield||x2||invisible)?
-   `hsl(${Math.random()*360},100%,50%)`:
-   "gray"
+  x:car.x+7,
+  y:car.y+car.size+2,
+  color: nitro ? "#b300ff" :
+   (shield||x2||invisible)
+   ? `hsl(${Math.random()*360},100%,50%)`
+   : "gray"
  });
  exhaust.forEach(e=>{
-  x.fillStyle=e.color;
-  x.fillRect(e.x,e.y,4,4);
-  e.y+=3;
+  x.fillStyle = e.color;
+  x.fillRect(e.x, e.y, 4, 4);
+  e.y += 3;
  });
- exhaust=exhaust.slice(-40);
+ exhaust = exhaust.slice(-40);
 }
 
 /* OBSTACLES */
 function drawObstacles(){
  obstacles.forEach(o=>{
-  x.fillStyle=o.color;
-  x.fillRect(o.x,o.y,10,10);
-  if(!shield && collide(car,o)) endGame();
+  x.fillStyle = o.color;
+  x.fillRect(o.x, o.y, 10, 10);
+  if(!shield && collide(car, o)) endGame();
  });
 }
+
 function moveObstacles(){
- obstacles.forEach(o=>o.y+=speed/60);
- if(Math.random()<0.05)
-  obstacles.push({x:Math.random()*350,y:-10,color:`hsl(${Math.random()*360},100%,50%)`});
+ obstacles.forEach(o => o.y += speed/60);
+ if(Math.random() < 0.05){
+  obstacles.push({
+   x: Math.random()*350,
+   y: -10,
+   color: `hsl(${Math.random()*360},100%,50%)`
+  });
+ }
 }
 
 /* COLLISION */
 function collide(a,b){
- return a.x<b.x+10&&a.x+a.size>b.x&&a.y<b.y+10&&a.y+a.size>b.y;
+ return a.x < b.x+10 &&
+        a.x+a.size > b.x &&
+        a.y < b.y+10 &&
+        a.y+a.size > b.y;
 }
 
-/* SCORE (0.85s) */
+/* SCORE */
 setInterval(()=>{
- if(running&&!paused){
-  score+=x2?2:1;
-  document.getElementById("score").textContent=score;
+ if(running && !paused){
+  score += x2 ? 2 : 1;
+  document.getElementById("score").textContent = score;
  }
 },850);
 
 /* TIMER */
 setInterval(()=>{
- if(running&&!paused){
+ if(running && !paused){
   timeLeft--;
-  document.getElementById("time").textContent=timeLeft;
-  if(timeLeft<=0) score>=500?win():endGame();
+  document.getElementById("time").textContent = timeLeft;
+  if(timeLeft <= 0) score >= 500 ? win() : endGame();
  }
 },1000);
 
 /* CHEATS */
 function applyCheat(){
- let c=document.getElementById("cheat").value;
- if(c==="SHIELD23") shield=!shield;
- if(c==="*2#") x2=!x2;
+ let c = document.getElementById("cheat").value;
+ if(c==="SHIELD23") shield = !shield;
+ if(c==="*2#") x2 = !x2;
  if(c==="3333"){ invisible=!invisible; shield=invisible; }
- if(c==="911") shield=!shield;
- if(c==="NITRO55"){ nitro=!nitro; speed=nitro?150:50; }
+ if(c==="911") shield = !shield;
+ if(c==="NITRO55"){ nitro=!nitro; speed = nitro ? 150 : 50; }
 }
 
-/* ACCELERATOR */
-const accel=document.getElementById("accel");
-accel.onmousedown=accel.ontouchstart=()=>{
- accelInt=setInterval(()=>{
-  speed=Math.min(speed+6,240);
-  document.getElementById("speed").textContent=speed;
+/* ACCEL */
+const accel = document.getElementById("accel");
+accel.onmousedown = accel.ontouchstart = ()=>{
+ accelInt = setInterval(()=>{
+  speed = Math.min(speed+6, 240);
+  document.getElementById("speed").textContent = speed;
  },150);
 };
-accel.onmouseup=accel.ontouchend=()=>{
+accel.onmouseup = accel.ontouchend = ()=>{
  clearInterval(accelInt);
- speed=50;
+ speed = 50;
 };
 
 /* MENU */
@@ -227,33 +244,33 @@ function startGame(){
  hud.style.display="block";
  dots.style.display="block";
  accel.style.display="block";
- running=true; loop();
+ running = true;
+ loop();
 }
 function toggleMenu(){
- dropdown.style.display=
- dropdown.style.display==="block"?"none":"block";
+ dropdown.style.display =
+  dropdown.style.display === "block" ? "none" : "block";
 }
-function pauseGame(){paused=true;}
-function resumeGame(){paused=false;loop();}
+function pauseGame(){ paused = true; }
+function resumeGame(){ paused = false; loop(); }
 function endGame(){
- running=false;
+ running = false;
  gameOver.style.display="flex";
 }
 function win(){
- running=false;
+ running = false;
  winScreen.style.display="flex";
 }
-function restart(){location.reload();}
-function goMenu(){location.reload();}
+function restart(){ location.reload(); }
+function goMenu(){ location.reload(); }
 
-/* ✅ GYRO WITH SCREEN CLAMP */
-window.addEventListener("deviceorientation",e=>{
- car.x+=e.gamma/4;
-
- // keep car inside screen
- if(car.x<0) car.x=0;
- if(car.x>360-car.size) car.x=360-car.size;
+/* GYRO CONTROL */
+window.addEventListener("deviceorientation", e=>{
+ car.x += e.gamma / 4;
+ if(car.x < 0) car.x = 0;
+ if(car.x > 360-car.size) car.x = 360-car.size;
 });
 </script>
+
 </body>
 </html>
