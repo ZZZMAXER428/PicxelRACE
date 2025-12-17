@@ -36,8 +36,6 @@ canvas{display:none;background:black;}
  position:absolute;top:8px;left:8px;
  font-size:10px;
 }
-
-/* dots menu */
 #dots{
  display:none;
  position:absolute;
@@ -47,7 +45,6 @@ canvas{display:none;background:black;}
  font-size:22px;
  line-height:1;
 }
-
 #dropdown{
  display:none;
  position:absolute;top:30px;right:8px;
@@ -106,7 +103,9 @@ const x = c.getContext("2d");
 
 let car = { x:170, y:500, size:14, color:"cyan" };
 let obstacles = [], exhaust = [];
-let score = 0, speed = 50, timeLeft = 300;
+let score = 0, timeLeft = 300;
+let baseSpeed = 50;
+let speed = baseSpeed;
 let running = false, paused = false;
 
 let shield = false, x2 = false, nitro = false, invisible = false;
@@ -221,20 +220,26 @@ function applyCheat(){
  if(c==="*2#") x2 = !x2;
  if(c==="3333"){ invisible=!invisible; shield=invisible; }
  if(c==="911") shield = !shield;
- if(c==="NITRO55"){ nitro=!nitro; speed = nitro ? 150 : 50; }
+
+ if(c==="NITRO55"){
+  nitro = !nitro;
+  speed = nitro ? baseSpeed + 50 : baseSpeed;
+  document.getElementById("speed").textContent = speed;
+ }
 }
 
 /* ACCEL */
 const accel = document.getElementById("accel");
 accel.onmousedown = accel.ontouchstart = ()=>{
  accelInt = setInterval(()=>{
-  speed = Math.min(speed+6, 240);
+  speed = Math.min(speed + 6, baseSpeed + (nitro ? 50 : 0));
   document.getElementById("speed").textContent = speed;
  },150);
 };
 accel.onmouseup = accel.ontouchend = ()=>{
  clearInterval(accelInt);
- speed = 50;
+ speed = baseSpeed + (nitro ? 50 : 0);
+ document.getElementById("speed").textContent = speed;
 };
 
 /* MENU */
@@ -245,6 +250,7 @@ function startGame(){
  dots.style.display="block";
  accel.style.display="block";
  running = true;
+ document.getElementById("speed").textContent = speed;
  loop();
 }
 function toggleMenu(){
