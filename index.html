@@ -103,9 +103,13 @@ const x = c.getContext("2d");
 
 let car = { x:170, y:500, size:14, color:"cyan" };
 let obstacles = [], exhaust = [];
+
 let score = 0, timeLeft = 300;
 let baseSpeed = 50;
+let maxSpeed = 250;
+let nitroBoost = 50;
 let speed = baseSpeed;
+
 let running = false, paused = false;
 
 let shield = false, x2 = false, nitro = false, invisible = false;
@@ -176,7 +180,6 @@ function drawObstacles(){
   if(!shield && collide(car, o)) endGame();
  });
 }
-
 function moveObstacles(){
  obstacles.forEach(o => o.y += speed/60);
  if(Math.random() < 0.05){
@@ -213,18 +216,30 @@ setInterval(()=>{
  }
 },1000);
 
+/* 10s POWERUP HANDLER */
+function timedEffect(flag, setter){
+ setter(true);
+ setTimeout(()=>setter(false), 10000);
+}
+
 /* CHEATS */
 function applyCheat(){
  let c = document.getElementById("cheat").value;
- if(c==="SHIELD23") shield = !shield;
- if(c==="*2#") x2 = !x2;
- if(c==="3333"){ invisible=!invisible; shield=invisible; }
- if(c==="911") shield = !shield;
+
+ if(c==="SHIELD23"){
+  timedEffect("shield", v=>shield=v);
+ }
+
+ if(c==="*2#"){
+  timedEffect("x2", v=>x2=v);
+ }
 
  if(c==="NITRO55"){
-  nitro = !nitro;
-  speed = nitro ? baseSpeed + 50 : baseSpeed;
-  document.getElementById("speed").textContent = speed;
+  timedEffect("nitro", v=>{
+   nitro = v;
+   speed = baseSpeed;
+   document.getElementById("speed").textContent = speed;
+  });
  }
 }
 
@@ -232,13 +247,14 @@ function applyCheat(){
 const accel = document.getElementById("accel");
 accel.onmousedown = accel.ontouchstart = ()=>{
  accelInt = setInterval(()=>{
-  speed = Math.min(speed + 6, baseSpeed + (nitro ? 50 : 0));
+  let limit = maxSpeed + (nitro ? nitroBoost : 0);
+  speed = Math.min(speed + 6, limit);
   document.getElementById("speed").textContent = speed;
  },150);
 };
 accel.onmouseup = accel.ontouchend = ()=>{
  clearInterval(accelInt);
- speed = baseSpeed + (nitro ? 50 : 0);
+ speed = baseSpeed;
  document.getElementById("speed").textContent = speed;
 };
 
@@ -270,7 +286,7 @@ function win(){
 function restart(){ location.reload(); }
 function goMenu(){ location.reload(); }
 
-/* GYRO CONTROL */
+/* GYRO */
 window.addEventListener("deviceorientation", e=>{
  car.x += e.gamma / 4;
  if(car.x < 0) car.x = 0;
